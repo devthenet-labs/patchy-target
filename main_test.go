@@ -25,3 +25,25 @@ func TestGreetHandlerEscapesHTML(t *testing.T) {
 		t.Fatalf("response does not contain escaped payload: %q", body)
 	}
 }
+
+func TestRunHandlerOK(t *testing.T) {
+	rec := httptest.NewRecorder()
+	runHandler(rec, httptest.NewRequest("GET", "/run?cmd=hello", nil))
+	if rec.Code != 200 {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+	if body := rec.Body.String(); strings.TrimSpace(body) != "hello" {
+		t.Fatalf("body = %q, want %q", body, "hello")
+	}
+}
+
+func TestRunHandlerDoesNotInterpretShellMetacharacters(t *testing.T) {
+	rec := httptest.NewRecorder()
+	runHandler(rec, httptest.NewRequest("GET", "/run?cmd=%3Bid", nil))
+	if rec.Code != 200 {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+	if body := strings.TrimSpace(rec.Body.String()); body != ";id" {
+		t.Fatalf("body = %q, want literal %q (shell metacharacters must not be interpreted)", body, ";id")
+	}
+}

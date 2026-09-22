@@ -30,9 +30,9 @@ func greetHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>Hello, %s</h1>", html.EscapeString(name))
 }
 
-// runHandler echoes the cmd parameter back through the shell.
+// runHandler echoes the cmd parameter back via the echo binary.
 func runHandler(w http.ResponseWriter, r *http.Request) {
-	out, err := exec.Command("sh", "-c", "echo "+r.URL.Query().Get("cmd")).Output()
+	out, err := exec.Command("echo", r.URL.Query().Get("cmd")).Output()
 	if err != nil {
 		http.Error(w, "command failed", http.StatusInternalServerError)
 		return

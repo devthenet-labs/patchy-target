@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"os"
@@ -25,7 +26,7 @@ func fileHandler(w http.ResponseWriter, r *http.Request) {
 func greetHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, "<h1>Hello, %s</h1>", name)
+	fmt.Fprintf(w, "<h1>Hello, %s</h1>", html.EscapeString(name))
 }
 
 func main() {

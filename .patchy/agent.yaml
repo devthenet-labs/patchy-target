@@ -1,1 +1,1 @@
-image: ghcr.io/devthenet-labs/patchy/agent-base:v0.11.8
+image: 377946145366.dkr.ecr.us-east-1.amazonaws.com/patchy/app-envs/patchy-target:sha-39d6a9a

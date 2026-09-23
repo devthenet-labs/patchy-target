@@ -11,12 +11,25 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // fileHandler serves a file from the data directory by name.
 func fileHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
-	content, err := os.ReadFile(filepath.Join("data", name))
+
+	dataDir, err := filepath.Abs("data")
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	path, err := filepath.Abs(filepath.Join(dataDir, name))
+	if err != nil || (path != dataDir && !strings.HasPrefix(path, dataDir+string(os.PathSeparator))) {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	content, err := os.ReadFile(path)
 	if err != nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return

@@ -25,3 +25,14 @@ func TestGreetHandlerEscapesHTML(t *testing.T) {
 		t.Fatalf("response does not contain escaped payload: %q", body)
 	}
 }
+
+func TestRedirectHandlerFollowsNext(t *testing.T) {
+	rec := httptest.NewRecorder()
+	redirectHandler(rec, httptest.NewRequest("GET", "/go?next=/greet", nil))
+	if rec.Code != 302 {
+		t.Fatalf("status = %d, want 302", rec.Code)
+	}
+	if loc := rec.Header().Get("Location"); loc != "/greet" {
+		t.Fatalf("Location = %q, want /greet", loc)
+	}
+}

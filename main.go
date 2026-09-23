@@ -40,9 +40,15 @@ func runHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(out)
 }
 
+// redirectHandler sends the caller on to the page named by next.
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, r.URL.Query().Get("next"), http.StatusFound)
+}
+
 func main() {
 	http.HandleFunc("/file", fileHandler)
 	http.HandleFunc("/greet", greetHandler)
 	http.HandleFunc("/run", runHandler)
+	http.HandleFunc("/go", redirectHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

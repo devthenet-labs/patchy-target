@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 )
 
@@ -13,5 +14,5 @@ func init() {
 func echoHandler(w http.ResponseWriter, r *http.Request) {
 	msg := r.URL.Query().Get("msg")
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, "<p>%s</p>", msg)
+	fmt.Fprintf(w, "<p>%s</p>", html.EscapeString(msg))
 }

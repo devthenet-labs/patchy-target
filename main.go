@@ -3,6 +3,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html"
 	"log"
@@ -45,10 +46,36 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, r.URL.Query().Get("next"), http.StatusFound)
 }
 
+// db is the user store; main opens it when USERS_DSN is set.
+var db *sql.DB
+
+// userHandler looks up a user's email address by name.
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	if db == nil {
+		http.Error(w, "user store unavailable", http.StatusServiceUnavailable)
+		return
+	}
+	name := r.URL.Query().Get("name")
+	var email string
+	err := db.QueryRow("SELECT email FROM users WHERE name = '" + name + "'").Scan(&email)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	fmt.Fprintln(w, email)
+}
+
 func main() {
+	if dsn := os.Getenv("USERS_DSN"); dsn != "" {
+		var err error
+		if db, err = sql.Open(os.Getenv("USERS_DRIVER"), dsn); err != nil {
+			log.Fatal(err)
+		}
+	}
 	http.HandleFunc("/file", fileHandler)
 	http.HandleFunc("/greet", greetHandler)
 	http.HandleFunc("/run", runHandler)
 	http.HandleFunc("/go", redirectHandler)
+	http.HandleFunc("/user", userHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

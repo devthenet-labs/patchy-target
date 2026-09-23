@@ -36,3 +36,11 @@ func TestRedirectHandlerFollowsNext(t *testing.T) {
 		t.Fatalf("Location = %q, want /greet", loc)
 	}
 }
+
+func TestUserHandlerWithoutStore(t *testing.T) {
+	rec := httptest.NewRecorder()
+	userHandler(rec, httptest.NewRequest("GET", "/user?name=alice", nil))
+	if rec.Code != 503 {
+		t.Fatalf("status = %d, want 503", rec.Code)
+	}
+}

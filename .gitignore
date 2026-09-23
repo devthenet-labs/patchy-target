@@ -1,0 +1,2 @@
+# The module's binary: `go build ./...` writes it here. Never commit it.
+/patchy-target

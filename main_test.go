@@ -47,3 +47,22 @@ func TestRunHandlerDoesNotInterpretShellMetacharacters(t *testing.T) {
 		t.Fatalf("body = %q, want literal %q (shell metacharacters must not be interpreted)", body, ";id")
 	}
 }
+
+func TestRedirectHandlerFollowsNext(t *testing.T) {
+	rec := httptest.NewRecorder()
+	redirectHandler(rec, httptest.NewRequest("GET", "/go?next=/greet", nil))
+	if rec.Code != 302 {
+		t.Fatalf("status = %d, want 302", rec.Code)
+	}
+	if loc := rec.Header().Get("Location"); loc != "/greet" {
+		t.Fatalf("Location = %q, want /greet", loc)
+	}
+}
+
+func TestUserHandlerWithoutStore(t *testing.T) {
+	rec := httptest.NewRecorder()
+	userHandler(rec, httptest.NewRequest("GET", "/user?name=alice", nil))
+	if rec.Code != 503 {
+		t.Fatalf("status = %d, want 503", rec.Code)
+	}
+}

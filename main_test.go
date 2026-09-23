@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -79,6 +80,23 @@ func TestRedirectHandlerFollowsNext(t *testing.T) {
 	}
 	if loc := rec.Header().Get("Location"); loc != "/greet" {
 		t.Fatalf("Location = %q, want /greet", loc)
+	}
+}
+
+func TestRedirectHandlerRejectsExternalTarget(t *testing.T) {
+	for _, next := range []string{
+		"https://evil.example",
+		"//evil.example",
+		"/\\evil.example",
+	} {
+		rec := httptest.NewRecorder()
+		redirectHandler(rec, httptest.NewRequest("GET", "/go?next="+url.QueryEscape(next), nil))
+		if rec.Code != 400 {
+			t.Fatalf("next=%q: status = %d, want 400", next, rec.Code)
+		}
+		if loc := rec.Header().Get("Location"); loc != "" {
+			t.Fatalf("next=%q: Location = %q, want empty", next, loc)
+		}
 	}
 }
 

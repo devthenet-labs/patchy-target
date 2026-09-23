@@ -8,6 +8,7 @@ import (
 	"html"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -54,9 +55,18 @@ func runHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(out)
 }
 
-// redirectHandler sends the caller on to the page named by next.
+// redirectHandler sends the caller on to the page named by next. To guard
+// against open redirects (CWE-601), next must be a same-site relative path.
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, r.URL.Query().Get("next"), http.StatusFound)
+	next := r.URL.Query().Get("next")
+	// Some browsers treat backslashes as forward slashes, so normalize
+	// them before parsing to avoid scheme-relative smuggling (e.g. "/\evil.com").
+	target, err := url.Parse(strings.ReplaceAll(next, "\\", "/"))
+	if err != nil || target.Host != "" || target.Scheme != "" {
+		http.Error(w, "invalid redirect target", http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, target.String(), http.StatusFound)
 }
 
 // db is the user store; main opens it when USERS_DSN is set.

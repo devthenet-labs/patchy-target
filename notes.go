@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func init() {
@@ -14,6 +15,10 @@ func init() {
 // directory as plain text.
 func notesHandler(w http.ResponseWriter, r *http.Request) {
 	note := r.URL.Query().Get("note")
+	if strings.ContainsAny(note, `/\`) || strings.Contains(note, "..") {
+		http.Error(w, "invalid note name", http.StatusBadRequest)
+		return
+	}
 	content, err := os.ReadFile(filepath.Join("data", note))
 	if err != nil {
 		http.Error(w, "no such note", http.StatusNotFound)

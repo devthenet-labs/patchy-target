@@ -57,7 +57,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	name := r.URL.Query().Get("name")
 	var email string
-	err := db.QueryRow("SELECT email FROM users WHERE name = '" + name + "'").Scan(&email)
+	err := db.QueryRow("SELECT email FROM users WHERE name = ?", name).Scan(&email)
 	if err != nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return

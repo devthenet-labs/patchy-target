@@ -1,10 +1,12 @@
 package main
 
 import (
-	"net"
+	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -20,25 +22,28 @@ func TestUpstreamHandlerReportsUnreachable(t *testing.T) {
 	}
 }
 
-// These targets have a valid http(s) scheme and host, so they pass the
-// handler's up-front syntactic check, but must still be refused: the dialer
-// resolves the host and rejects the connection because the address is
-// loopback, private, or link-local. That surfaces as the same "unreachable"
-// response used for any other connection failure.
-func TestCheckURLHandlerRejectsPrivateAndLoopbackTargets(t *testing.T) {
+// The URL probe accepts only its configured endpoint. Reject all other
+// destinations before making a request, including public hosts and addresses
+// not covered by net.IP.IsPrivate (such as shared-address space).
+func TestCheckURLHandlerRejectsUnapprovedTargets(t *testing.T) {
 	targets := []string{
 		"http://127.0.0.1:1/",
 		"http://localhost:1/",
 		"http://169.254.169.254/latest/meta-data/",
 		"http://10.0.0.1/",
+		"http://100.64.0.1/",
 		"http://[::1]/",
+		"https://example.org/",
+		"https://status.example.com.evil.test/health",
+		"https://status.example.com/health/extra",
+		"https://user@status.example.com/health",
 	}
 	for _, target := range targets {
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/check-url?url="+url.QueryEscape(target), nil)
 		checkURLHandler(rec, req)
-		if rec.Code != http.StatusBadGateway {
-			t.Fatalf("target %q: status = %d, want %d", target, rec.Code, http.StatusBadGateway)
+		if rec.Code != http.StatusBadRequest {
+			t.Fatalf("target %q: status = %d, want %d", target, rec.Code, http.StatusBadRequest)
 		}
 	}
 }
@@ -61,30 +66,33 @@ func TestCheckURLHandlerRejectsMissingHost(t *testing.T) {
 	}
 }
 
-func TestIsPublicIP(t *testing.T) {
-	cases := []struct {
-		ip     string
-		public bool
-	}{
-		{"8.8.8.8", true},
-		{"1.1.1.1", true},
-		{"127.0.0.1", false},
-		{"10.0.0.1", false},
-		{"172.16.0.1", false},
-		{"192.168.1.1", false},
-		{"169.254.169.254", false},
-		{"0.0.0.0", false},
-		{"::1", false},
-		{"::", false},
-		{"224.0.0.1", false},
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+func TestCheckURLHandlerUsesOnlyTheTrustedEndpoint(t *testing.T) {
+	old := checkURLClient
+	defer func() { checkURLClient = old }()
+	checkURLClient = &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		if got := req.URL.String(); got != trustedHealthURL {
+			t.Errorf("outbound URL = %q, want %q", got, trustedHealthURL)
+		}
+		return &http.Response{StatusCode: http.StatusNoContent, Body: io.NopCloser(strings.NewReader(""))}, nil
+	})}
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/check-url?url="+url.QueryEscape(trustedHealthURL), nil)
+	checkURLHandler(rec, req)
+	if rec.Code != http.StatusOK || rec.Body.String() != "service status: 204\n" {
+		t.Fatalf("response = %d %q, want 200 with service status 204", rec.Code, rec.Body.String())
 	}
-	for _, c := range cases {
-		ip := net.ParseIP(c.ip)
-		if ip == nil {
-			t.Fatalf("failed to parse test IP %q", c.ip)
-		}
-		if got := isPublicIP(ip); got != c.public {
-			t.Errorf("isPublicIP(%q) = %v, want %v", c.ip, got, c.public)
-		}
+}
+
+func TestCheckURLClientDoesNotFollowRedirects(t *testing.T) {
+	req := httptest.NewRequest("GET", "http://127.0.0.1/latest/meta-data", nil)
+	if err := checkURLClient.CheckRedirect(req, nil); !errors.Is(err, http.ErrUseLastResponse) {
+		t.Fatalf("redirect policy = %v, want ErrUseLastResponse", err)
 	}
 }

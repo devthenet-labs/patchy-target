@@ -11,8 +11,11 @@ func init() {
 	http.HandleFunc("/check-url", checkURLHandler)
 }
 
+// trustedHealthURL is the only endpoint the caller-triggered probe may reach.
+const trustedHealthURL = "https://status.example.com/health"
+
 // upstreamURL is the health endpoint of the service this one depends on.
-var upstreamURL = "https://status.example.com/health"
+var upstreamURL = trustedHealthURL
 
 // upstreamClient calls the upstream service.
 var upstreamClient = &http.Client{
@@ -31,10 +34,24 @@ func upstreamHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "upstream status: %d\n", resp.StatusCode)
 }
 
-// checkURLHandler reports the status of a caller-supplied service URL.
+// A trusted endpoint can still redirect. Report the redirect's status rather
+// than following it to a destination chosen by the remote server.
+var checkURLClient = &http.Client{
+	Timeout: 5 * time.Second,
+	CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
+// checkURLHandler reports the configured service's status. The input selects
+// that one trusted URL exactly; it never flows into the outbound request.
 func checkURLHandler(w http.ResponseWriter, r *http.Request) {
-	target := r.URL.Query().Get("url")
-	resp, err := http.Get(target)
+	if r.URL.Query().Get("url") != trustedHealthURL {
+		http.Error(w, "invalid url", http.StatusBadRequest)
+		return
+	}
+
+	resp, err := checkURLClient.Get(trustedHealthURL)
 	if err != nil {
 		http.Error(w, "service unreachable", http.StatusBadGateway)
 		return

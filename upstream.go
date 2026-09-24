@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,9 +16,6 @@ var upstreamURL = "https://status.example.com/health"
 // upstreamClient calls the upstream service.
 var upstreamClient = &http.Client{
 	Timeout: 5 * time.Second,
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
 }
 
 // upstreamHandler reports the upstream service's health status code.

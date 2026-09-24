@@ -8,6 +8,7 @@ import (
 
 func init() {
 	http.HandleFunc("/upstream", upstreamHandler)
+	http.HandleFunc("/check-url", checkURLHandler)
 }
 
 // upstreamURL is the health endpoint of the service this one depends on.
@@ -28,4 +29,16 @@ func upstreamHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprintf(w, "upstream status: %d\n", resp.StatusCode)
+}
+
+// checkURLHandler reports the status of a caller-supplied service URL.
+func checkURLHandler(w http.ResponseWriter, r *http.Request) {
+	target := r.URL.Query().Get("url")
+	resp, err := http.Get(target)
+	if err != nil {
+		http.Error(w, "service unreachable", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Fprintf(w, "service status: %d\n", resp.StatusCode)
 }

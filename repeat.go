@@ -20,8 +20,7 @@ func repeatHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad count", http.StatusBadRequest)
 		return
 	}
-	count := int32(n)
-	if count < 0 || count > 100 {
+	if n < 0 || n > 100 {
 		http.Error(w, "count out of range", http.StatusBadRequest)
 		return
 	}

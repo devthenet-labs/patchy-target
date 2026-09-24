@@ -24,3 +24,11 @@ func TestRepeatHandlerRejectsLargeCount(t *testing.T) {
 		t.Fatalf("status = %d, want 400", rec.Code)
 	}
 }
+
+func TestRepeatHandlerRejectsInt32WraparoundCount(t *testing.T) {
+	rec := httptest.NewRecorder()
+	repeatHandler(rec, httptest.NewRequest("GET", "/repeat?word=hi&count=4294967346", nil))
+	if rec.Code != 400 {
+		t.Fatalf("status = %d, want 400", rec.Code)
+	}
+}

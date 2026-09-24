@@ -1,6 +1,7 @@
 # Builds the patchy agent image (.patchy/Dockerfile) and pushes it to ECR,
-# keylessly: GitHub's OIDC token is exchanged for the push role, which trusts
-# devthenet-labs repositories on refs/heads/main only. No stored secrets.
+# keylessly: GitHub's OIDC token is exchanged for this repository's own push
+# role, which trusts only this repository on refs/heads/main and can push only
+# to this repository's ECR repository. No stored secrets.
 #
 # Tags are immutable in ECR, so each build pushes only :sha-<short sha> and
 # never a moving tag. Point .patchy/agent.yaml at the new tag to adopt a build.
@@ -29,7 +30,7 @@ concurrency:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: patchy/app-envs/patchy-target
-  PUSH_ROLE: arn:aws:iam::377946145366:role/devthenet-labs-app-env-push
+  PUSH_ROLE: arn:aws:iam::377946145366:role/devthenet-labs-app-env-push-patchy-target
 
 jobs:
   build-push:

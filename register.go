@@ -15,7 +15,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Form.Get("user")
-	password := r.Form.Get("password")
-	log.Printf("Registering new user %s with password %s.\n", user, password)
+	log.Printf("Registering new user %s.\n", user)
 	w.WriteHeader(http.StatusAccepted)
 }

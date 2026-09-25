@@ -7,5 +7,5 @@ import (
 
 // sessionKey creates a temporary signing key for a demo session.
 func sessionKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

@@ -15,7 +15,6 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	account := r.Form.Get("account")
-	password := r.Form.Get("password")
-	log.Printf("Resetting password for account %s to %s.\n", account, password)
+	log.Printf("Resetting password for account %s.\n", account)
 	w.WriteHeader(http.StatusAccepted)
 }

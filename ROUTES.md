@@ -11,6 +11,7 @@ it on pull requests.
 - `/fortune`
 - `/go`
 - `/greet`
+- `/health`
 - `/motd`
 - `/notes`
 - `/register`

@@ -14,6 +14,7 @@ it on pull requests.
 - `/health`
 - `/motd`
 - `/notes`
+- `/ready`
 - `/register`
 - `/repeat`
 - `/reset`

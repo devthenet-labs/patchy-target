@@ -7,5 +7,5 @@ import (
 
 // exportSigningKey creates the signing key for exported audit bundles.
 func exportSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

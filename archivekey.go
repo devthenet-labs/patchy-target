@@ -7,5 +7,5 @@ import (
 
 // archiveSigningKey creates the signing key for saved export manifests.
 func archiveSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

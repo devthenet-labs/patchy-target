@@ -7,5 +7,5 @@ import (
 
 // manifestSigningKey creates the signing key for exported release manifests.
 func manifestSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

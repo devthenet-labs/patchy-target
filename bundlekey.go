@@ -7,5 +7,5 @@ import (
 
 // bundleSigningKey creates the signing key for exported diagnostic bundles.
 func bundleSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

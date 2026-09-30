@@ -7,5 +7,5 @@ import (
 
 // recoverySigningKey creates the demo service's recovery signing key.
 func recoverySigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 512)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

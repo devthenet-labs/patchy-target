@@ -7,5 +7,5 @@ import (
 
 // auditSigningKey creates the demo service's audit signing key.
 func auditSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

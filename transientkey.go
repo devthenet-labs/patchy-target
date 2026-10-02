@@ -7,5 +7,5 @@ import (
 
 // transientSigningKey creates a key for a temporary demo session.
 func transientSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

@@ -7,5 +7,5 @@ import (
 
 // prefixGateSigningKey creates a key for a short-lived image-prefix token.
 func prefixGateSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

@@ -7,5 +7,5 @@ import (
 
 // previewGateSigningKey creates a key for a short-lived demo token.
 func previewGateSigningKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

@@ -7,5 +7,5 @@ import (
 
 // agentResourceGateKey creates a key for a short-lived test token.
 func agentResourceGateKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }

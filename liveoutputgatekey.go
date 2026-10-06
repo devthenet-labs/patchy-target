@@ -7,5 +7,5 @@ import (
 
 // liveOutputGateKey creates a key for a short-lived live-output session token.
 func liveOutputGateKey() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(rand.Reader, 1024)
+	return rsa.GenerateKey(rand.Reader, 2048)
 }
